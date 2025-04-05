@@ -1,18 +1,19 @@
-import pdf from "pdf-parse";
-import fs from "fs";
+import fs from "fs"
+import pdf from "pdf-parse-new";
 
 export const extractTextFromMultiplePDFs = async (filePaths) => {
-  try {
-    const extractedTexts = await Promise.all(
-      filePaths.map(async (filePath) => {
-        const dataBuffer = fs.readFile(filePath);
-        const data = await pdf(dataBuffer);
-        return { file: filePath, text: data.text };
-      })
-    );
-    return extractedTexts;
-  } catch (error) {
-    console.error("Error extracting text from Pdfs:", error);
-    throw new Error("Failed to process Pdfs");
+  const results = [];
+
+  for(const filePath of filePaths){
+    try {
+      const dataBuffer = await fs.readFile(filePath);
+      const pdfData = await pdf(dataBuffer);
+      results.push({ text: pdfData.text, file: filePath});
+    } catch (error) {
+      console.error(`Error processing file ${filePath}:`, error);
+      results.push({ text: "", file: filePath, error: "Failed to parse PDF" });
+    }
   }
+
+  return results;
 };

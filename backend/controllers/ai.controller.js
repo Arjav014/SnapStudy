@@ -1,4 +1,4 @@
-import { getAIResponse } from "../services/ai.service";
+import { getAIResponse } from "../services/ai.service.js";
 
 export const generateSummary = async (req,res) => {
     try {
