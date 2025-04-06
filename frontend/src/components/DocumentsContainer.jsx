@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useFileStore from "../store/useFileStore";
 import toast from "react-hot-toast";
+import { getExtractedData } from "../services/getExtractedData";
 
 const DocumentsContainer = () => {
   const navigate = useNavigate();
@@ -9,8 +10,6 @@ const DocumentsContainer = () => {
 
   const { files, addFile, removeFile } = useFileStore();
   const [documents, setDocuments] = useState([]);
-
-  console.log(files);
 
   useEffect(() => {
     if(files.length === 0){
@@ -79,7 +78,7 @@ const DocumentsContainer = () => {
   };
 
   const handleProcessDocuments = async () => {
-    navigate("/processing");
+    getExtractedData(files);
   };
 
   return (
