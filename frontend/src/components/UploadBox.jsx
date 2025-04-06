@@ -36,6 +36,7 @@ const UploadBox = () => {
 
       const result = await response.json();
       addFile(result.metadata);
+      toast.success("File uploaded successfully!");
 
       navigate("/documents");
     } catch (error) {

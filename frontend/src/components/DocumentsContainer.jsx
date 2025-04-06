@@ -1,80 +1,85 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import useFileStore from "../store/useFileStore";
+import toast from "react-hot-toast";
 
 const DocumentsContainer = () => {
   const navigate = useNavigate();
-  const [documents, setDocuments] = useState([]);
   const fileInputRef = useRef(null);
 
+  const { files, addFile, removeFile } = useFileStore();
+  const [documents, setDocuments] = useState([]);
+
+  console.log(files);
+
   useEffect(() => {
-    // Get files from sessionStorage
-    const storedFiles = sessionStorage.getItem("uploadedFiles");
-    if (storedFiles) {
-      setDocuments(JSON.parse(storedFiles));
-    } else {
-      // If no files found, redirect back to upload page
+    if(files.length === 0){
       navigate("/");
+    } else {
+      setDocuments(files);
     }
-  }, [navigate]);
+  }, [files, navigate]);
 
-  const handleAddMoreClick = () => {
-    fileInputRef.current.click();
-  };
+  const handleFileInputChange = async (e) => {
+    const newFile = e.target.files[0];
+    if(!newFile) return;
 
-  const handleFileInputChange = (e) => {
-    const files = e.target.files;
-    if (files.length === 0) return;
+    const isValid = newFile.type === "application/pdf";
 
-    const validFiles = Array.from(files).filter(file => {
-      const fileType = file.type;
-      return fileType === "application/pdf" || 
-             fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    });
-
-    if (validFiles.length === 0) {
-      alert("Please upload only PDF or DOCX files.");
+    if (!isValid) {
+      toast.error("Only PDF files are allowed.");
       return;
     }
 
-    // Add new files to existing documents
-    const newFiles = validFiles.map(file => ({
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      lastModified: file.lastModified
-    }));
+    const formData = new FormData();
+    formData.append("file", newFile);
 
-    const updatedDocuments = [...documents, ...newFiles];
-    setDocuments(updatedDocuments);
-    
-    // Update sessionStorage with all files
-    sessionStorage.setItem("uploadedFiles", JSON.stringify(updatedDocuments));
-  };
+    try {
+      const response = await fetch("http://localhost:3001/api/pdf/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-  const handleRemoveDocument = (index) => {
-    const updatedDocuments = documents.filter((_, i) => i !== index);
-    setDocuments(updatedDocuments);
-    
-    // Update sessionStorage with remaining files
-    if (updatedDocuments.length === 0) {
-      sessionStorage.removeItem("uploadedFiles");
-      navigate("/");
-    } else {
-      sessionStorage.setItem("uploadedFiles", JSON.stringify(updatedDocuments));
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const result = await response.json();
+      addFile(result.metadata);
+      toast.success("File uploaded successfully!");
+    } catch (error) {
+      console.error("Error adding new file:",error);
+      toast.error("Failed to upload file.");
     }
   };
 
-  const handleProcessDocuments = () => {
-    // Navigate to processing page
+  const handleRemoveDocument = async (index) => {
+    const fileToRemove = documents[index];
+    
+    if (!fileToRemove || !fileToRemove.id) {
+      toast.error("Invalid file.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:3001/api/pdf/delete/${fileToRemove.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete file.");
+      }
+
+      removeFile(fileToRemove.id);
+      toast.success("File removed successfully!");
+    } catch (error) {
+      console.error("Error deleting file:", err);
+      toast.error("Could not delete the file.");
+    }
+  };
+
+  const handleProcessDocuments = async () => {
     navigate("/processing");
-  };
-
-  const getFileTypeIcon = (fileType) => {
-    if (fileType === "application/pdf") {
-      return "📄"; // PDF icon
-    } else {
-      return "📝"; // DOCX icon
-    }
   };
 
   return (
@@ -84,11 +89,11 @@ const DocumentsContainer = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {documents.map((doc, index) => (
           <div 
-            key={`${doc.name}-${index}`}
+            key={doc.id}
             className="bg-white rounded-lg shadow-md p-4 border border-gray-200"
           >
             <div className="flex items-center mb-2">
-              <span className="text-2xl mr-2">{getFileTypeIcon(doc.type)}</span>
+              <span className="text-2xl mr-2">📄</span>
               <div className="flex-1 truncate">
                 <p className="font-medium truncate">{doc.name}</p>
                 <p className="text-sm text-gray-500">
@@ -107,7 +112,7 @@ const DocumentsContainer = () => {
         
         {/* Add More Card */}
         <div 
-          onClick={handleAddMoreClick}
+          onClick={() => fileInputRef.current.click()}
           className="bg-white rounded-lg shadow-md p-4 border border-dashed border-orange-500 flex items-center justify-center cursor-pointer hover:bg-orange-50 transition"
         >
           <div className="text-center">
@@ -121,7 +126,7 @@ const DocumentsContainer = () => {
         type="file"
         ref={fileInputRef}
         className="hidden"
-        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        accept=".pdf,application/pdf"
         onChange={handleFileInputChange}
       />
       
