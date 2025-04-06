@@ -1,4 +1,4 @@
-import fs from "fs"
+import fs from "fs/promises"
 import pdf from "pdf-parse-new";
 
 export const extractTextFromMultiplePDFs = async (filePaths) => {
