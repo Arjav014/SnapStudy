@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const genAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
+const genAI = new GoogleGenAI({ apiKey: "AIzaSyCY-yKh9aZKZPte13FYkVgwbEYy2gRm4rU"});
 
 export const getAIResponse = async (text, prompt) => {
   try {
