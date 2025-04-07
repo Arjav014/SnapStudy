@@ -4,26 +4,26 @@ import { useNavigate } from "react-router-dom";
 const ProcessingContainer = () => {
   const navigate = useNavigate();
   const [files, setFiles] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  useEffect(() => {
-    // Get files from sessionStorage
-    const storedFiles = sessionStorage.getItem("uploadedFiles");
-    if (storedFiles) {
-      setFiles(JSON.parse(storedFiles));
-    } else {
-      // If no files found, redirect back to upload page
-      navigate("/");
-      return;
-    }
+  // useEffect(() => {
+  //   // Get files from sessionStorage
+  //   const storedFiles = sessionStorage.getItem("uploadedFiles");
+  //   if (storedFiles) {
+  //     setFiles(JSON.parse(storedFiles));
+  //   } else {
+  //     // If no files found, redirect back to upload page
+  //     navigate("/");
+  //     return;
+  //   }
     
-    // Simulate processing time
-    const timer = setTimeout(() => {
-      setIsProcessing(false);
-    }, 3000);
+  //   // Simulate processing time
+  //   const timer = setTimeout(() => {
+  //     setIsProcessing(false);
+  //   }, 3000);
     
-    return () => clearTimeout(timer);
-  }, [navigate]);
+  //   return () => clearTimeout(timer);
+  // }, [navigate]);
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">

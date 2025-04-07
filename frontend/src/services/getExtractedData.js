@@ -15,7 +15,7 @@ export const getExtractedData = async (files) => {
     }
 
     const result = await response.json();
-    console.log(result);
+    return result;
   } catch (error) {
     console.error("Error while extracting data:", error);
   }

@@ -8,7 +8,7 @@ const DocumentsContainer = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  const { files, addFile, removeFile } = useFileStore();
+  const { files, addFile, removeFile, setProcessedData } = useFileStore();
   const [documents, setDocuments] = useState([]);
 
   useEffect(() => {
@@ -78,7 +78,29 @@ const DocumentsContainer = () => {
   };
 
   const handleProcessDocuments = async () => {
-    getExtractedData(files);
+    navigate("/processing");
+    const extractedText = await getExtractedData(files);
+    
+    if(extractedText?.combinedText){
+      const response = await fetch("http://localhost:3001/api/ai/process",{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ combinedText: extractedText.combinedText }),
+      })
+
+      if (!response.ok) {
+        toast.error("Failed to process documents.");
+        return;
+      }
+
+      const processedResult = await response.json();
+
+      setProcessedData(processedResult);
+
+      console.log(processedResult);
+    }
   };
 
   return (

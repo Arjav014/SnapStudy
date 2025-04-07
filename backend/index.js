@@ -18,7 +18,7 @@ app.use(
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/pdf", pdfRoutes);
-app.use("api/ai", aiRoutes);
+app.use("/api/ai", aiRoutes);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
