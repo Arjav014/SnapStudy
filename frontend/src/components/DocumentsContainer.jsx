@@ -8,7 +8,7 @@ const DocumentsContainer = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  const { files, addFile, removeFile, setProcessedData } = useFileStore();
+  const { files, addFile, removeFile, setProcessedData, setProcessingStage, clearProcessedData } = useFileStore();
   const [documents, setDocuments] = useState([]);
 
   useEffect(() => {
@@ -78,28 +78,37 @@ const DocumentsContainer = () => {
   };
 
   const handleProcessDocuments = async () => {
+    clearProcessedData();
     navigate("/processing");
+
+    setProcessingStage("reading");
     const extractedText = await getExtractedData(files);
     
     if(extractedText?.combinedText){
-      const response = await fetch("http://localhost:3001/api/ai/process",{
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ combinedText: extractedText.combinedText }),
-      })
+      try {
+        setProcessingStage("processing");
 
-      if (!response.ok) {
-        toast.error("Failed to process documents.");
-        return;
+        const response = await fetch("http://localhost:3001/api/ai/process",{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ combinedText: extractedText.combinedText }),
+        })
+  
+        if (!response.ok) {
+          toast.error("Failed to process documents.");
+          return;
+        }
+  
+        const processedResult = await response.json();
+  
+        setProcessedData(processedResult);
+        setProcessingStage("complete");
+        console.log(processedResult);
+      } catch (error) {
+        console.error("Error processing documents:", error);
       }
-
-      const processedResult = await response.json();
-
-      setProcessedData(processedResult);
-
-      console.log(processedResult);
     }
   };
 

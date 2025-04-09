@@ -6,6 +6,7 @@ const useFileStore = create(
     (set) => ({
       files: [],
       processedData: null,
+      processingStage: null,
 
       addFile: (file) => set((state) => ({ files: [...state.files, file] })),
       removeFile: (id) =>
@@ -16,6 +17,7 @@ const useFileStore = create(
 
       setProcessedData: (data) => set({ processedData: data }),
       clearProcessedData: () => set({ processedData: null }),
+      setProcessingStage: (stage) => set({ processingStage: stage }),
     }),
     {
       name: "snapstudy-files", // key in localStorage
