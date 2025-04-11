@@ -1,6 +1,5 @@
 import React from "react";
 import Header from '../components/Header';
-import Footer from '../components/Footer';
 import BackgroundPattern from '../components/BackgroundPattern';
 import DocumentsContainer from '../components/DocumentsContainer'; // Import the new container component
 
