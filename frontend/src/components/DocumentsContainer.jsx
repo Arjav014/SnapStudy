@@ -105,7 +105,6 @@ const DocumentsContainer = () => {
   
         setProcessedData(processedResult);
         setProcessingStage("complete");
-        console.log(processedResult);
       } catch (error) {
         console.error("Error processing documents:", error);
       }

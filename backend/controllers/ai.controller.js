@@ -7,7 +7,8 @@ const cleanJSON = (str) => {
 export const processText = async (req, res) => {
   try {
     const { combinedText } = req.body;
-    if (!combinedText) return res.status(400).json({ error: "No text provided" });
+    if (!combinedText)
+      return res.status(400).json({ error: "No text provided" });
 
     // Summary Prompt
     const summaryPrompt = "Summarize this document collection.";
@@ -23,8 +24,27 @@ export const processText = async (req, res) => {
 
     // Formula Prompt
     const formulaPrompt = `
-      Extract all mathematical formulas. Return JSON {"formulas": ["Formula 1", "Formula 2", ...]}
+      From the following academic text, extract only the important mathematical formulas (if any).
+      For each formula, provide:
+      - A heading or title for the formula
+      - The formula itself
+      - A short explanation of what the formula is or how it is used
+
+      If no formulas are found in the text, return an empty array.
+
+      Format the response in the following JSON structure:
+      {
+        "formulas": [
+          {
+            "title": "Area of a Circle",
+            "formula": "A = πr^2",
+            "explanation": "This formula calculates the area of a circle where r is the radius."
+          },
+          ...
+        ]
+      }
     `;
+
     const formulaResponse = await getAIResponse(combinedText, formulaPrompt);
     const formulas = JSON.parse(cleanJSON(formulaResponse)).formulas;
 
@@ -34,7 +54,6 @@ export const processText = async (req, res) => {
       quiz,
       formulas,
     });
-
   } catch (error) {
     console.error("AI processing error:", error);
     return res.status(500).json({ error: "AI processing failed" });

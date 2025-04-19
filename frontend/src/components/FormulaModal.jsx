@@ -2,8 +2,23 @@ import React from "react";
 import Modal from "./Modal";
 import useFileStore from "../store/useFileStore";
 
+// Formats subscripts: F_AB → F<sub>AB</sub>, μ_s → μ<sub>s</sub>, etc.
+const formatSubscripts = (text) => {
+  if (!text) return "";
+
+  return text
+    .replace(/([A-Za-z0-9]')?_([A-Za-z0-9]+)/g, (match, base, sub) => {
+      return `${base || ""}<sub>${sub}</sub>`;
+    })
+    .replace(/([a-z])([A-Z])/g, (match, lower, upper) => {
+      return `${lower}<sub>${upper}</sub>`;
+    });
+};
+
 const FormulaModal = ({ isOpen, onClose }) => {
   const { processedData } = useFileStore();
+  const formulas = processedData?.formulas || [];
+
   return (
     <Modal
       isOpen={isOpen}
@@ -18,50 +33,24 @@ const FormulaModal = ({ isOpen, onClose }) => {
           reference.
         </p>
 
-        <h4 className="font-medium text-md mt-4 mb-2">Mechanics Formulas</h4>
-        <div className="bg-gray-50 p-3 rounded mb-3">
-          <p className="font-medium">Newton's Second Law:</p>
-          <p className="font-mono">F = ma</p>
-          <p className="text-sm text-gray-600 mt-1">
-            Force equals mass times acceleration
-          </p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded mb-3">
-          <p className="font-medium">Kinetic Energy:</p>
-          <p className="font-mono">KE = (1/2)mv²</p>
-          <p className="text-sm text-gray-600 mt-1">
-            Kinetic energy equals half of mass times velocity squared
-          </p>
-        </div>
-
-        <h4 className="font-medium text-md mt-4 mb-2">
-          Thermodynamics Formulas
-        </h4>
-        <div className="bg-gray-50 p-3 rounded mb-3">
-          <p className="font-medium">Ideal Gas Law:</p>
-          <p className="font-mono">PV = nRT</p>
-          <p className="text-sm text-gray-600 mt-1">
-            Pressure times volume equals number of moles times gas constant
-            times temperature
-          </p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded mb-3">
-          <p className="font-medium">Entropy Change:</p>
-          <p className="font-mono">ΔS = q/T</p>
-          <p className="text-sm text-gray-600 mt-1">
-            Change in entropy equals heat transfer divided by temperature
-          </p>
-        </div>
-
-        <h4 className="font-medium text-md mt-4 mb-2">
-          Electromagnetic Formulas
-        </h4>
-        <div className="bg-gray-50 p-3 rounded">
-          <p className="font-medium">Ohm's Law:</p>
-          <p className="font-mono">V = IR</p>
-          <p className="text-sm text-gray-600 mt-1">
-            Voltage equals current times resistance
-          </p>
+        <div className="space-y-4">
+          {formulas.map((item, index) => (
+            <div key={index} className="bg-gray-50 p-3 rounded">
+              <p className="font-medium">{item.title}</p>
+              <p
+                className="font-mono"
+                dangerouslySetInnerHTML={{
+                  __html: formatSubscripts(item.formula),
+                }}
+              />
+              <p
+                className="text-sm text-gray-600 mt-1"
+                dangerouslySetInnerHTML={{
+                  __html: formatSubscripts(item.explanation),
+                }}
+              />
+            </div>
+          ))}
         </div>
       </div>
     </Modal>
