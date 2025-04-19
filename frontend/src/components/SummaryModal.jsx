@@ -3,63 +3,105 @@ import useFileStore from "../store/useFileStore";
 
 const SummaryModal = ({ isOpen, onClose }) => {
   const { processedData } = useFileStore();
-  
+
   if (!isOpen) return null;
 
   // Function to render markdown-like content with proper formatting
   const renderFormattedContent = (text) => {
     if (!text) return null;
 
-    // Split by double newlines to separate paragraphs
+    const formatInline = (text) => {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/g, "<em>$1</em>");
+    };
+
+    // Split by double newlines to separate blocks
     const paragraphs = text.split("\n\n");
-    
-    return paragraphs.map((paragraph, index) => {
-      // Check if paragraph is a heading
-      if (paragraph.startsWith("**") && paragraph.endsWith("**")) {
+
+    return paragraphs
+      .filter((p) => p.trim() !== "") // Remove empty paragraphs
+      .map((paragraph, index) => {
+        const trimmed = paragraph.trim();
+
+        // Heading: **Heading**
+        if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
+          return (
+            <h3 key={index} className="font-bold text-lg mt-4 mb-2">
+              {trimmed.replace(/^\*\*|\*\*$/g, "")}
+            </h3>
+          );
+        }
+
+        // Subheading: *Subheading*
+        if (trimmed.startsWith("*") && trimmed.endsWith("*")) {
+          return (
+            <h4 key={index} className="font-medium text-md mt-3 mb-2">
+              {trimmed.replace(/^\*|\*$/g, "")}
+            </h4>
+          );
+        }
+
+        // Bullet points: * item or - item
+        if (/^(\*|-)\s+/m.test(trimmed)) {
+          const items = trimmed
+            .split(/(?:^|\n)(?:\*|-)\s+/)
+            .filter((item) => item.trim());
+          return (
+            <ul key={index} className="list-disc pl-5 mb-3">
+              {items.map((item, i) => (
+                <li
+                  key={i}
+                  className="mb-1"
+                  dangerouslySetInnerHTML={{
+                    __html: formatInline(item.trim()),
+                  }}
+                />
+              ))}
+            </ul>
+          );
+        }
+
+        // Blockquote: > Quote
+        if (trimmed.startsWith(">")) {
+          return (
+            <blockquote
+              key={index}
+              className="border-l-4 border-gray-400 pl-4 italic text-gray-600 mb-3"
+            >
+              {trimmed.replace(/^>\s*/, "")}
+            </blockquote>
+          );
+        }
+
+        // Code block: ```code```
+        if (trimmed.startsWith("```") && trimmed.endsWith("```")) {
+          return (
+            <pre
+              key={index}
+              className="bg-gray-100 p-3 rounded mb-3 overflow-x-auto"
+            >
+              <code>{trimmed.replace(/```/g, "")}</code>
+            </pre>
+          );
+        }
+
+        // Regular paragraph with inline formatting
         return (
-          <h3 key={index} className="font-bold text-lg mt-4 mb-2">
-            {paragraph.replace(/^\*\*|\*\*$/g, '')}
-          </h3>
+          <p
+            key={index}
+            className="text-gray-700 mb-3"
+            dangerouslySetInnerHTML={{ __html: formatInline(trimmed) }}
+          />
         );
-      }
-      
-      // Check if paragraph is a subheading
-      if (paragraph.startsWith("*") && paragraph.endsWith("*")) {
-        return (
-          <h4 key={index} className="font-medium text-md mt-3 mb-2">
-            {paragraph.replace(/^\*|\*$/g, '')}
-          </h4>
-        );
-      }
-      
-      // Format bullet points
-      if (paragraph.includes("*   ")) {
-        const items = paragraph.split("*   ").filter(item => item.trim());
-        return (
-          <ul key={index} className="list-disc pl-5 mb-3">
-            {items.map((item, i) => (
-              <li key={i} className="mb-1">{item.trim()}</li>
-            ))}
-          </ul>
-        );
-      }
-      
-      // Regular paragraph
-      return (
-        <p key={index} className="text-gray-700 mb-3">
-          {paragraph}
-        </p>
-      );
-    });
+      });
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
         <div className="mb-4">
-          <h2 className="text-xl font-bold text-gray-800">
-            Document Summary
-          </h2>
+          <h2 className="text-xl font-bold text-gray-800">Document Summary</h2>
         </div>
 
         <div
