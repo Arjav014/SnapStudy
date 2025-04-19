@@ -29,8 +29,9 @@ const FormulaModal = ({ isOpen, onClose }) => {
       <div className="p-4 border border-gray-200 rounded">
         <h3 className="font-medium text-lg mb-2">Formulas</h3>
         <p className="text-gray-700 mb-3">
-          All formulas extracted from your documents are listed below for easy
-          reference.
+          {formulas.length > 0
+            ? "All formulas extracted from your documents are listed below for easy reference."
+            : "No formulas present in this document"}
         </p>
 
         <div className="space-y-4">
