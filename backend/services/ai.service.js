@@ -1,12 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
-import { GEMINI_API_KEY } from "../config.js";
+import { AI_KEY } from "../config.js";
 
-const genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+const genAI = new GoogleGenAI({ apiKey: AI_KEY });
 
 export const getAIResponse = async (text, prompt) => {
   try {
     const response = await genAI.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.0-flash-lite",
       contents: `${prompt}\n\n${text}`,
     });
     if(!response || !response.text){
